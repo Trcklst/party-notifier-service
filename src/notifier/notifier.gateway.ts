@@ -32,17 +32,17 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async uploadError(trackDto: TrackDto) {
     const connection = await this.notifierService.findSocketIdByUserId(trackDto.userId);
-    this.server.sockets.connected[connection.socketId].emit('upload-error');
+    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('upload-error') : null;
   }
 
   public async progressUpload(uploadDto: UploadDto) {
     const connection = await this.notifierService.findSocketIdByUserId(uploadDto.userId);
-    this.server.sockets.connected[connection.socketId].emit('progress-upload', uploadDto);
+    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('progress-upload', uploadDto) : null;
   }
 
   public async uploaded(uploadDto: UploadDto) {
     const connection = await this.notifierService.findSocketIdByUserId(uploadDto.userId);
-    this.server.sockets.connected[connection.socketId].emit('uploaded', uploadDto);
+    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('uploaded', uploadDto) : null;
   }
 
   public async partyDeleted(partyDto: PartyDto) {
@@ -57,6 +57,10 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async partyJoined(partyUserDto: PartyUserDto) {
     const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.userId);
+    if(!connection.socketId) {
+      return;
+    }
+
     const userSocket = this.server.sockets.connected[connection.socketId];
     userSocket.join(partyUserDto.party._id);
     this.server.to(partyUserDto.party._id).emit('members-updated', {count: partyUserDto.party.members.length})
@@ -64,6 +68,10 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async partyLeaved(partyUserDto: PartyUserDto) {
     const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.userId);
+    if(!connection.socketId) {
+      return;
+    }
+
     const userSocket = this.server.sockets.connected[connection.socketId];
     userSocket.leave(partyUserDto.party._id);
     this.server.to(partyUserDto.party._id).emit('members-updated', {count: partyUserDto.party.members.length})
