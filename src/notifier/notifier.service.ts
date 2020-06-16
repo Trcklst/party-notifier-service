@@ -3,6 +3,7 @@ import { CONNECTION_MODEL } from '../constants';
 import { Connection } from './interface/connection.interface';
 import { Model } from 'mongoose';
 import { Socket } from 'socket.io';
+import configuration from '../config/configuration';
 
 @Injectable()
 export class NotifierService {
@@ -15,26 +16,30 @@ export class NotifierService {
     return this.connectionModel.findOne({userId: userId});
   }
 
-  async removeConnection(userId): Promise<Connection> {
-    return this.connectionModel.findOneAndRemove({userId: userId});
+  async removeConnection(user): Promise<Connection> {
+    if(!user?.userId) {
+      return null;
+    }
+    return this.connectionModel.findOneAndRemove({userId: user.userId});
   }
 
-  async connection(userId, client : Socket) {
-/*    if(!token) {
+  async connection(token: string, client : Socket) {
+    if(!token) {
       client.disconnect(true);
-    }*/
+      return;
+    }
 
-    /*
-    todo: check validity token
-    const response = await this.httpService.post(configuration.services.authService + `check_token?token=${token}`).toPromise();
-    const userId = response.data.client_id;
+    try {
+      const response = await this.httpService.post(configuration.services.authService + `check_token?token=${token}`).toPromise();
+      const user = response.data;
+      client["user"] = user;
 
-    if(!userId) {
+      const update = {userId: user.userId, socketId: client.id};
+      const options = {upsert: true, new: true, setDefaultsOnInsert: true, useFindAndModify: false};
+      return this.connectionModel.findOneAndUpdate({ userId: user.userId }, update, options);
+    } catch (e) {
       client.disconnect(true);
-    }*/
-    client["userId"] = userId;
-    const update = {userId: userId, socketId: client.id};
-    const options = {upsert: true, new: true, setDefaultsOnInsert: true, useFindAndModify: false};
-    return this.connectionModel.findOneAndUpdate({ userId: userId }, update, options);
+      return;
+    }
   }
 }

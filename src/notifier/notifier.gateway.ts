@@ -22,12 +22,12 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
 
   async handleConnection(client: Socket): Promise<any> {
-    const userId = client.handshake.query.userId;
-    await this.notifierService.connection(userId, client);
+    const token = client.handshake.query.token;
+    await this.notifierService.connection(token, client);
   }
 
   async handleDisconnect(client: Socket): Promise<any> {
-    await this.notifierService.removeConnection(client["userId"]);
+    await this.notifierService.removeConnection(client["user"]);
   }
 
   public async uploadError(trackDto: TrackDto) {

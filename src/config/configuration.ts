@@ -6,7 +6,7 @@ export default {
   },
   jwtSecret: process.env.JWT_SECRET,
   app: {
-    wsPort: Number(process.env.WSPORT)
+    wsPort: Number(process.env.WS_SERVER_PORT),
   },
   database: {
     host: process.env.DB_HOST,
