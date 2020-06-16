@@ -12,7 +12,8 @@ async function bootstrap() {
       ],
       queue: configuration.rabbitMq.queue,
       noAck: false,
-      prefetchCount: 1
+      prefetchCount: 1,
+      maxRetries: 15
     }
   });
 
