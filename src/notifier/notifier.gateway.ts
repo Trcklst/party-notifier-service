@@ -56,25 +56,29 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   public async partyJoined(partyUserDto: PartyUserDto) {
-    const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.userId);
+    const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.user.userId);
     if(!connection.socketId) {
       return;
     }
 
     const userSocket = this.server.sockets.connected[connection.socketId];
-    userSocket.join(partyUserDto.party._id);
-    this.server.to(partyUserDto.party._id).emit('members-updated', {count: partyUserDto.party.members.length})
+    if(!userSocket.rooms[partyUserDto.party._id]) {
+      userSocket.join(partyUserDto.party._id);
+    }
+    this.server.to(partyUserDto.party._id).emit('member-joined', {party: partyUserDto.party, user: partyUserDto.user})
   }
 
   public async partyLeaved(partyUserDto: PartyUserDto) {
-    const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.userId);
+    const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.user.userId);
     if(!connection.socketId) {
       return;
     }
 
     const userSocket = this.server.sockets.connected[connection.socketId];
-    userSocket.leave(partyUserDto.party._id);
-    this.server.to(partyUserDto.party._id).emit('members-updated', {count: partyUserDto.party.members.length})
+    if(userSocket.rooms[partyUserDto.party._id]) {
+      userSocket.leave(partyUserDto.party._id);
+    }
+    this.server.to(partyUserDto.party._id).emit('member-leaved', {party: partyUserDto.party, user: partyUserDto.user})
   }
 
   public partyUpdated(partyDto: PartyDto) {
