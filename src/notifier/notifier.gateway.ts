@@ -7,7 +7,7 @@ import {
 import configuration from '../config/configuration';
 import { NotifierService } from './notifier.service';
 import { Server, Socket } from 'socket.io';
-import { PartyDto, PartyUserDto } from '../party/dto/partyUser.dto';
+import { PartyActionDto, PartyDto, PartyUserDto } from '../party/dto/partyUser.dto';
 import { TrackDto } from '../upload/dto/track.dto';
 import { UploadDto } from '../upload/dto/upload.dto';
 
@@ -32,17 +32,17 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async uploadError(trackDto: TrackDto) {
     const connection = await this.notifierService.findSocketIdByUserId(trackDto.userId);
-    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('upload-error') : null;
+    connection && connection.socketId ? this.server.sockets.connected[connection.socketId].emit('upload-error') : null;
   }
 
   public async progressUpload(uploadDto: UploadDto) {
     const connection = await this.notifierService.findSocketIdByUserId(uploadDto.userId);
-    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('progress-upload', uploadDto) : null;
+    connection && connection.socketId ? this.server.sockets.connected[connection.socketId].emit('progress-upload', uploadDto) : null;
   }
 
   public async uploaded(uploadDto: UploadDto) {
     const connection = await this.notifierService.findSocketIdByUserId(uploadDto.userId);
-    connection.socketId ? this.server.sockets.connected[connection.socketId].emit('uploaded', uploadDto) : null;
+    connection && connection.socketId ? this.server.sockets.connected[connection.socketId].emit('uploaded', uploadDto) : null;
   }
 
   public async partyDeleted(partyDto: PartyDto) {
@@ -57,7 +57,7 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async partyJoined(partyUserDto: PartyUserDto) {
     const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.user.userId);
-    if(!connection.socketId) {
+    if(!connection || !connection.socketId) {
       return;
     }
 
@@ -70,7 +70,7 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   public async partyLeaved(partyUserDto: PartyUserDto) {
     const connection = await this.notifierService.findSocketIdByUserId(partyUserDto.user.userId);
-    if(!connection.socketId) {
+    if(!connection || !connection.socketId) {
       return;
     }
 
@@ -81,7 +81,7 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.server.to(partyUserDto.party._id).emit('member-leaved', {party: partyUserDto.party, user: partyUserDto.user})
   }
 
-  public partyUpdated(partyDto: PartyDto) {
-    this.server.to(partyDto._id).emit('party-updated', {party: partyDto});
+  public partyUpdated(partyActionDto: PartyActionDto) {
+    this.server.to(partyActionDto.updatedParty._id).emit('party-updated', {party: partyActionDto.updatedParty, action: partyActionDto});
   }
 }

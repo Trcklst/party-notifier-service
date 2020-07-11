@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { NotifierGateway } from '../notifier/notifier.gateway';
-import { PartyDto, PartyUserDto } from './dto/partyUser.dto';
+import { PartyActionDto, PartyDto, PartyUserDto } from './dto/partyUser.dto';
 
 @Controller('party')
 export class PartyController {
@@ -48,13 +48,13 @@ export class PartyController {
 
   @MessagePattern('party-updated')
   public async partyUpdated(
-    @Payload() partyDto: PartyDto,
+    @Payload() partyActionDto: PartyActionDto,
     @Ctx() context: RmqContext
   ) {
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
 
-    await this.notifierGateway.partyUpdated(partyDto);
+    await this.notifierGateway.partyUpdated(partyActionDto);
     channel.ack(originalMessage);
   }
 }

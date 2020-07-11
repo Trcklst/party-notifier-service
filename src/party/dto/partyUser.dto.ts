@@ -7,6 +7,11 @@ export class PartyDto  {
   tracks: string[];
 }
 
+export class PartyActionDto {
+  updatedParty: PartyDto;
+  action: string;
+}
+
 export enum RoleEnum {
   ROLE_ADMIN,
   ROLE_USER
