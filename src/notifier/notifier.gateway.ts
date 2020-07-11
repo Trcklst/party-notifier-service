@@ -82,6 +82,6 @@ export class NotifierGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   public partyUpdated(partyActionDto: PartyActionDto) {
-    this.server.to(partyActionDto.updatedParty._id).emit('party-updated', {party: partyActionDto.updatedParty, action: partyActionDto});
+    this.server.to(partyActionDto.updatedParty._id).emit('party-updated', {party: partyActionDto.updatedParty, action: partyActionDto.action});
   }
 }
