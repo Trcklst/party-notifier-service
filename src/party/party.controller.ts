@@ -53,7 +53,7 @@ export class PartyController {
   ) {
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
-
+    console.log('party-updated-controller');
     await this.notifierGateway.partyUpdated(partyActionDto);
     channel.ack(originalMessage);
   }
